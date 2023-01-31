@@ -45,7 +45,7 @@ function setup() {
 //draw out each character in the array list of characters.
 function draw() {
   clear();
-  background('lightblue');
+  background('lightgray');
   characters.forEach(c => { c.display() });
 
   //if the key is pressed, move the characters x postion by 5 pixels to left or right.
