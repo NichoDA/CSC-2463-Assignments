@@ -36,7 +36,7 @@ let keyIsPressed = false;
 
 //create canvas and initialize any characters.
 function setup() {
-  createCanvas(800, 400);
+  createCanvas(displayWidth, displayHeight);
   characters.push(new Character('Eskimo.png'));
   characters.push(new Character('Ninja.png'));
   characters.push(new Character('Eskimo.png'));
@@ -45,6 +45,7 @@ function setup() {
 //draw out each character in the array list of characters.
 function draw() {
   clear();
+  background('lightblue');
   characters.forEach(c => { c.display() });
 
   //if the key is pressed, move the characters x postion by 5 pixels to left or right.
