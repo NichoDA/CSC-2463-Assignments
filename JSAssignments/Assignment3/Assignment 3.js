@@ -53,12 +53,18 @@ function draw() {
   if (keyIsPressed) {
     if (keyCode === LEFT_ARROW) {
       characters.forEach(c => {
-        c.x -= 5;
+        // doesnt allow sprite to leave screen
+        if (c.x > 0) {
+          c.x -= 5;
+        }
         c.flipped = true;
       });
     } else if (keyCode === RIGHT_ARROW) {
       characters.forEach(c => {
-        c.x += 5;
+        //doesnt allow sprite to leave screen
+        if (c.x < width - 80) {
+          c.x += 5;
+        }
         c.flipped = false;
       });
     }
