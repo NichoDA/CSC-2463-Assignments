@@ -13,7 +13,7 @@ function getRandomNumber(min, max) {
 //preload the spritesheets
 function preload() {
   spriteSheet1 = loadImage("Eskimo.png");
-  spriteSheet2 = loadImage("Ninja.png");
+  spriteSheet2 = loadImage("Bug.png");
 }
 
 //setup canvas and create 3 objects in WalkingAnimation class and push them into an array
@@ -23,7 +23,7 @@ function setup() {
 
   walkingAnimations.push(new WalkingAnimation(spriteSheet1,80,80,getRandomNumber(0,400),getRandomNumber(0,400),9));
   walkingAnimations.push(new WalkingAnimation(spriteSheet1,80,80,getRandomNumber(0,400),getRandomNumber(0,400),9));
-  walkingAnimations.push(new WalkingAnimation(spriteSheet2,80,80,getRandomNumber(0,400),getRandomNumber(0,400),9));
+  walkingAnimations.push(new WalkingAnimation(spriteSheet2,32,32,getRandomNumber(0,400),getRandomNumber(0,400),9));
 }
 
 //draw all objects in array
