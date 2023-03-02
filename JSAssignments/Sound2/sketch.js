@@ -27,7 +27,7 @@ const delay = new Tone.FeedbackDelay({
 
 const reverb = new Tone.JCReverb(0.4);
 
-const synthEffects = new Tone.Gain(); // create separate effects chain for synth
+const synthEffects = new Tone.Gain(); 
 synthEffects.connect(delay);
 delay.connect(reverb);
 reverb.toDestination();
@@ -60,13 +60,13 @@ synth.connect(synthEffects);
 function setup() {
   createCanvas(400, 400);
   
-  // create and connect brick sound button
+
   const brickButton = document.querySelector("#brick-button");
   brickButton.addEventListener("click", () => {
     brick.triggerAttackRelease("8n");
   });
 
-  // create and connect sliders
+
   slider = new Nexus.Slider("#slider", {
     'size': [200, 20],
     'min': 0.1,
@@ -85,7 +85,7 @@ function setup() {
   }); 
 
   slider2.on('change', (v) => {
-    synth.volume.value = v; // adjust synth volume
+    synth.volume.value = v; 
   });
 }
 
