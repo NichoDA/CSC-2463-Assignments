@@ -1,0 +1,69 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+}
+canvas {
+  display: block;
+}
+
+#slider {
+  position: absolute;
+  left: 20px;
+  top: 15px;
+}
+
+#slider2 {
+  position: absolute;
+  left: 250px;
+  top: 15px;
+}
+
+#brick-button{
+  position: relative;
+  margin-left: 20px;
+  margin-top: 400px;
+  
+}
+#button-des{
+  position: absolute;
+  margin-left: 20px;
+  margin-top:380px;
+  color: black;
+  font-size: 14px;
+  text-align: center;
+  
+}
+#reverb-text {
+  position: absolute;
+  margin-left: 20px;
+  color: black;
+  font-size: 14px;
+  text-align: center;
+}
+
+#volume-text {
+  position: absolute;
+  margin-left: 250px;
+  color: black;
+  font-size: 14px;
+  text-align: center;
+}
+
+#p-text {
+  position: absolute;
+  margin-left: 20px;
+  margin-top:50px;
+  color: black;
+  font-size: 14px;
+  text-align: center;
+}
+
+#octave {
+  position: absolute;
+  margin-left: 20px;
+  margin-top:70px;
+  color: black;
+  font-size: 14px;
+  text-align: center;
+}
