@@ -37,7 +37,7 @@ osc2.connect(osc2Env);
 let img;
 
 function preload() {
-  img = createImg('assets/probe.png');
+  img = createImg('assets/Probe.png');
   img.position(0,0);
   img.hide();
 }
