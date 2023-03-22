@@ -1,6 +1,6 @@
 let spriteSheet;
 let walkingAnimation;
-
+Tone.start();
 let sounds = new Tone.Players({
   "Squish": "assets/Squish.wav",
 }).toDestination();
@@ -138,6 +138,7 @@ function draw() {
 
 
 function keyPressed() {
+  Tone.start();
   switch(game.state) {
     case GameState.Start:
       game.state = GameState.Playing;
@@ -150,6 +151,7 @@ function keyPressed() {
 }
 
 function mousePressed() {
+  Tone.start();
   switch(game.state) {
     case GameState.Playing:
       for (let i=0; i < animations.length; i++) {
@@ -193,9 +195,7 @@ class WalkingAnimation {
   }
 
   draw() {
-
-
-
+    Tone.start();
     this.u = (this.moving != 0) ? this.currentFrame % this.animationLength : this.u;
     push();
     translate(this.dx,this.dy);
