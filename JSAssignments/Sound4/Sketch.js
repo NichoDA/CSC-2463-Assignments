@@ -3,6 +3,8 @@ let walkingAnimation;
 Tone.start();
 let sounds = new Tone.Players({
   "Squish": "assets/Squish.wav",
+  "Swing": "assets/Swing.mp3",
+  "Crawl": "assets/Crawl.wav"
 }).toDestination();
 
 let spriteSheetFilenames = ["Bug.png"];
@@ -74,6 +76,7 @@ function draw() {
     case GameState.Playing:
       background(220);
 
+      
       for(let i=0; i < animations.length; i++) {
         animations[i].draw();
       }
@@ -88,6 +91,7 @@ function draw() {
       let currentTime = game.maxTime - game.elapsedTime;
       text(ceil(currentTime), 300,40);
       game.elapsedTime += deltaTime / 1000;
+      sounds.player("Crawl").start();
 
       if (currentTime < 0)
         game.state = GameState.GameOver;
@@ -154,14 +158,16 @@ function mousePressed() {
   Tone.start();
   switch(game.state) {
     case GameState.Playing:
+      sounds.player("Swing").start();
       for (let i=0; i < animations.length; i++) {
         let contains = animations[i].contains(mouseX,mouseY);
         if (contains) {
           if (animations[i].moving != 0) {
             animations[i].stop();
-            if (animations[i].spritesheet === spriteSheets[game.targetSprite])
+            if (animations[i].spritesheet === spriteSheets[game.targetSprite]){
               game.score += 1;
               sounds.player("Squish").start();
+            }
           }
         }
       }
