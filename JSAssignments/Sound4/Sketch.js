@@ -48,6 +48,7 @@ function preload() {
 }
 
 function setup() {
+  Tone.start();
   createCanvas(400, 400);
   imageMode(CENTER);
   angleMode(DEGREES);
@@ -67,6 +68,7 @@ function reset() {
 }
 
 function draw() {
+  Tone.start();
   switch(game.state) {
     case GameState.Playing:
       background(220);
