@@ -40,10 +40,10 @@ const GameState = {
 let game = { score: 0, maxScore: 0, maxTime: 30, elapsedTime: 0, totalSprites: 30, state: GameState.Start, targetSprite: 0};
 
 function preload() {
+  Tone.start();
   for(let i=0; i < spriteSheetFilenames.length; i++) {
     spriteSheets[i] = loadImage("assets/" + spriteSheetFilenames[i]);
   }
-
   Tone.Transport.start();
 }
 
@@ -57,6 +57,7 @@ function setup() {
 }
 
 function reset() {
+  Tone.start();
   game.elapsedTime = 0;
   game.score = 0;
   game.totalSprites = random(10,30);
