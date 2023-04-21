@@ -1,5 +1,19 @@
 let spriteSheet;
 let walkingAnimation;
+let connectButton;
+let port;
+let writer, reader;
+let joySwitch;
+let button;
+let red, green, blue;
+let sensorData = {};
+
+let lastButtonPress = 0;
+const debounceDelay = 1000;
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
+
+
 Tone.start();
 let sounds = new Tone.Players({
   "Squish": "assets/Squish.wav",
@@ -29,9 +43,6 @@ const GameOvermelody = new Tone.Sequence((time, note) => {
 	// subdivisions are given as subarrays
 }, [ 'C5', 'B4', 'A4', 'G4','F4', 'E4', 'D4', 'C4']).start("0:0");
 
-
-
-
 const GameState = {
   Start: "Start",
   Playing: "Playing",
@@ -56,6 +67,13 @@ function setup() {
   angleMode(DEGREES);
   reset();
 
+  if ("serial" in navigator) {
+    // The Web Serial API is supported
+    connectButton = createButton("connect");
+    connectButton.position(10, 10);
+    connectButton.mousePressed(connect);
+  }
+
 }
 
 function reset() {
@@ -72,27 +90,58 @@ function reset() {
 
 function draw() {
   Tone.start();
+
+  if (reader) {
+    serialRead();
+  }
+
+  if (writer) {
+    writer.write(encoder.encode(red + "," + green +  "," + joySwitch + "\n"))
+  }
+
+  joySwitch = sensorData.Switch;
+
+  if (joySwitch == 0 && (millis() - lastButtonPress) > debounceDelay) {
+    lastButtonPress = millis(); // update time of last button press
+    buttonPressed(); // call function to handle button press
+  }
+
+
+  red = sensorData.Xaxis;
+  green = sensorData.Yaxis;
+
+  console.log("Switch: " + joySwitch + "Xval: " + red + "Yval: " + green);
+
+  xVal = map(red, 0, 255, 0, width);
+  yVal = map(green, 0, 255, 0, width)
+
+  console.log ("xVal: "+ xVal + "yVal: " + yVal);
+
   switch(game.state) {
     case GameState.Playing:
+      connectButton.hide();
+      serialWrite(new String("HIGH"));
       background(220);
-
-      
+    
+      push();
+      fill('blue');
+      circle(map(red, 0, 255, 0, width), map(green, 0, 255, 0, height), 10);
+      pop();
+    
       for(let i=0; i < animations.length; i++) {
         animations[i].draw();
       }
-
+    
       if (game.score == animations.length -5){
         for(let i=0; i < animations.length; i++) {
           animations[i].draw();
         }
       }
-
+    
       if (game.score == animations.length){
         game.state = GameState.GameOver;
       }
-
-      
-       
+    
       fill(0);
       textSize(40);
       text(game.score,20,40);
@@ -100,12 +149,13 @@ function draw() {
       text(ceil(currentTime), 300,40);
       game.elapsedTime += deltaTime / 1000;
       sounds.player("Crawl").start();
-
+    
       if (currentTime < 0)
         game.state = GameState.GameOver;
       break;
 
     case GameState.GameOver:
+      serialWrite(new String("LOW"));
       game.maxScore = max(game.score,game.maxScore);
       background(0);
       fill(255);
@@ -118,13 +168,21 @@ function draw() {
       break;
 
     case GameState.Start:
-      background(0);
-      fill(255);
+      serialWrite(new String("LOW"));
+      background(220);
+      fill(0);
       textSize(45);
       textAlign(CENTER);
       text("Bug Squish Game",200,200);
       textSize(30);
       text("Press Any Key to Start",200,300);
+
+      push();
+      fill(0);
+      circle(map(red, 0, 255, 0, width), map(green, 0, 255, 0, height), 10);
+      pop();
+
+
       break;
   }
 
@@ -148,6 +206,37 @@ function draw() {
   }
 }
 
+function serialWrite(str) {
+  if (writer) {
+    writer.write(encoder.encode(str + "\n"));
+  }
+}
+
+async function serialRead() {
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) {
+      reader.releaseLock();
+      break;
+    }
+   //  console.log(value);
+    sensorData = JSON.parse(value);
+  }
+ }
+
+ async function connect() {
+  port = await navigator.serial.requestPort();
+
+  await port.open({ baudRate: 9600 });
+ 
+  writer = port.writable.getWriter();
+ 
+  reader = port.readable
+    .pipeThrough(new TextDecoderStream())
+    .pipeThrough(new TransformStream(new LineBreakTransformer()))
+    .getReader();
+ }
+ 
 
 function keyPressed() {
   Tone.start();
@@ -162,30 +251,28 @@ function keyPressed() {
   }
 }
 
-function mousePressed() {
+function buttonPressed() {
+  try{
   Tone.start();
-  switch(game.state) {
-    case GameState.Playing:
-      sounds.player("Swing").start();
-      for (let i=0; i < animations.length; i++) {
-        let contains = animations[i].contains(mouseX,mouseY);
-        if (contains) {
-          if (animations[i].moving != 0) {
-            animations[i].stop();
-            if (animations[i].spritesheet === spriteSheets[game.targetSprite]){
-              game.score += 1;
-              sounds.player("Squish").start();
+    switch(game.state) {
+      case GameState.Playing:
+        sounds.player("Swing").start();
+        for (let i=0; i < animations.length; i++) {
+          let contains = animations[i].contains(xVal, yVal);
+          if (contains) {
+            if (animations[i].moving != 0) {
+              animations[i].stop();
+              if (animations[i].spritesheet === spriteSheets[game.targetSprite]){
+                game.score += 1;
+                sounds.player("Squish").start();
+              }
             }
           }
         }
-      }
-      break;
-    // case GameState.GameOver:
-    //   reset();
-    //   game.state = GameState.Playing;
-    //   break;
+    }
+  }catch (error){
+    console.log(error);
   }
-  
 }
 
 class WalkingAnimation {
@@ -311,3 +398,24 @@ class WalkingAnimation {
     
   }
 }
+
+class LineBreakTransformer {
+  constructor() {
+    // A container for holding stream data until a new line.
+    this.chunks = "";
+  }
+ 
+  transform(chunk, controller) {
+    // Append new chunks to existing chunks.
+    this.chunks += chunk;
+    // For each line breaks in chunks, send the parsed lines out.
+    const lines = this.chunks.split("\n");
+    this.chunks = lines.pop();
+    lines.forEach((line) => controller.enqueue(line));
+  }
+ 
+  flush(controller) {
+    // When the stream is closed, flush any remaining chunks out.
+    controller.enqueue(this.chunks);
+  }
+ }
