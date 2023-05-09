@@ -1,3 +1,5 @@
+// youtube link : https://www.youtube.com/watch?v=00Ni4RLKXig&ab_channel=NicholasDomingue
+// github pages link: https://nichoda.github.io/CSC-2463-Assignments/JSAssignments/FinalProject/index.html
 let spriteSheet;
 let connectButton;
 let port;
