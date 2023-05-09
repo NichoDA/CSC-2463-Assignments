@@ -137,7 +137,7 @@ function draw() {
           animations[i].draw();
         }
       }
-    
+     
       if (game.score == animations.length){
         game.state = GameState.GameOver;
       }

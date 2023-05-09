@@ -2,12 +2,16 @@ let spriteSheet;
 let connectButton;
 let port;
 let writer, reader;
+let joySwitch;
 let button;
+let red, green, blue;
 let sensorData = {};
+
 let lastButtonPress = 0;
 const debounceDelay = 1000;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
+
 const gravity = 1.5;
 const keys = {
   right: {
@@ -67,7 +71,7 @@ const GameState = {
 };
 
 
-let game = { score: 0, maxScore: 0, maxTime: 90, elapsedTime: 0, lives: 3, immunityTimer: 0, walkSoundTimer: 0, state: GameState.Start};
+let game = { score: 0, maxScore: 0, maxTime: 50, elapsedTime: 0, lives: 3, immunityTimer: 0, walkSoundTimer: 0, state: GameState.Start};
 
 function preload() {
   Tone.start();
@@ -147,11 +151,12 @@ function setup() {
 
 function reset() {
   Tone.start();
+  serialWrite(new String("LOW"));
   game.elapsedTime = 0;
   game.lives = 3;
   game.score = 0;
   scrollOffset = 0;
-  game.character = new Character(spriteSheet,80,80,200,200,8);
+  game.character = new Character(spriteSheet,80,80,100,562,8);
   game.background = new Background({x:0, y:0, image: bgPlaying});
   game.flagpole = new flag({x: 6700, y: 500, image: flagPole});
   game.enemies = [new Enemy({ x: 2400, y: 550, image: enemies}),
@@ -203,7 +208,9 @@ function reset() {
 
 
 function draw() {
+  serialWrite(new String("LOW"));
   Tone.start();
+
   if (reader) {
     serialRead();
   }
@@ -211,11 +218,24 @@ function draw() {
     writer.write(encoder.encode(red + "," + green +  "," + joySwitch + "\n"))
   }
 
+  joySwitch = sensorData.Switch;
+
+  if (joySwitch == 0 && (millis() - lastButtonPress) > debounceDelay) {
+    lastButtonPress = millis(); 
+    game.character.velocity.y -= 27;
+    sounds.player("Jump").start(); 
+  }
+
+  xVal = sensorData.Xaxis;
+  yVal = sensorData.Yaxis;
+
+
+ console.log("Switch: " + joySwitch + "Xval: " + xVal + "Yval: " + yVal);
+
   switch(game.state) {
     case GameState.Playing:  
       connectButton.hide();
       createCanvas(innerWidth-100, 650); 
-      serialWrite(new String("HIGH"));
       background("blue");
 
       game.background.draw();
@@ -240,17 +260,20 @@ function draw() {
         image(heart, 50 + i * 60, 50);
       }
 
-
-      if (keys.right.pressed && game.character.position.x < 420){
+      if ((keys.right.pressed || xVal >= 150) && game.character.position.x < 420){
         game.character.velocity.x = game.character.speed;
+        game.character.xDirection = 1;
+        game.character.moving =1;
       }
-      else if ((keys.left.pressed && game.character.position.x > 100) || (keys.left.pressed && scrollOffset === 0 && game.character.position.x > 0)){
+      else if (((keys.left.pressed || xVal <= 105) && game.character.position.x > 100) || (keys.left.pressed && scrollOffset === 0 && game.character.position.x > 0)){
         game.character.velocity.x = -game.character.speed;
+        game.character.xDirection = -1;
+        game.character.moving = 1;
       }
       else{
         game.character.velocity.x = 0;
 
-        if (keys.right.pressed){
+        if (keys.right.pressed || xVal >= 150){
           scrollOffset += game.character.speed;
           game.background.position.x -= game.character.speed * .60;
           game.flagpole.position.x -= game.character.speed;
@@ -260,9 +283,11 @@ function draw() {
           game.enemies.forEach(enemy =>{
             enemy.position.x -= game.character.speed;
           });
+          game.character.xDirection = 1;
+          game.character.moving = 1; 
         }
 
-        else if (keys.left.pressed && scrollOffset > 0){
+        else if ((keys.left.pressed || xVal <= 105) && scrollOffset > 0){
           scrollOffset -= game.character.speed;
           game.background.position.x += game.character.speed * .60;
           game.flagpole.position.x += game.character.speed;
@@ -272,8 +297,15 @@ function draw() {
           game.enemies.forEach(enemy =>{
             enemy.position.x += game.character.speed;
           });
+          game.character.xDirection = -1;  
+          game.character.moving = 1;
+        }
+        else{
+          game.character.currentFrame = 0 ; 
         }
       }
+
+
 
       game.platforms.forEach(platform =>{
         if (game.character.position.y + game.character.height <= platform.position.y
@@ -281,7 +313,7 @@ function draw() {
           && game.character.position.x + game.character.width >= platform.position.x 
           && game.character.position.x <= platform.position.x + platform.width){
           game.character.velocity.y = 0; 
-          if (game.walkSoundTimer === 0 && (keys.left.pressed || keys.right.pressed)) { 
+          if (game.walkSoundTimer === 0 && (keys.left.pressed || keys.right.pressed ||  xVal >= 150||xVal <= 105 )) { 
             game.walkSoundTimer = 15;
             sounds.player("Walk").start();
           }
@@ -306,6 +338,10 @@ function draw() {
       let currentTime = game.maxTime - game.elapsedTime;
       text("Time left: " + ceil(currentTime), innerWidth-200, 40);
       game.elapsedTime += deltaTime / 1000;
+
+      if (currentTime <=20){
+          serialWrite(new String("HIGH"));
+      }
     
       if (currentTime <= 0){
         game.state = GameState.YouLost;
@@ -457,17 +493,11 @@ addEventListener('keydown', ({keyCode}) =>{
   switch (keyCode) {
     case 65:
       keys.left.pressed = true;
-      game.character.xDirection = -1;
-      game.character.currentFrame = 1;
-      game.character.moving = 1;
       break; 
     case 83:
       break;
     case 68:
       keys.right.pressed = true;
-      game.character.xDirection = 1;
-      game.character.currentFrame = 1;
-      game.character.moving =1;
       break;
     case 87:
       game.character.velocity.y -= 27;
@@ -481,12 +511,14 @@ addEventListener('keyup', ({keyCode}) =>{
     case 65:
       keys.left.pressed = false;
       game.character.moving = 0;
+      game.character.currentFrame = 1;
       break;
     case 83:
       break;
     case 68:
       keys.right.pressed = false;
       game.character.moving = 0;
+      game.character.currentFrame = 1; 
       break;
     case 87:
       game.character.velocity.y = 0;
