@@ -69,7 +69,7 @@ class WalkingAnimation {
 
   //draw out the animation from the spritesheet.
   draw() {
-    this.u = (this.moving != 0) ? this.currentFrame % this.animationLength : 0;
+    //this.u = (this.moving != 0) ? this.currentFrame % this.animationLength : 0;
     push();
     translate(this.dx, this.dy);
     scale(this.xDirection, 1);
