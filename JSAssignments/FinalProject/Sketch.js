@@ -75,11 +75,11 @@ let game = { score: 0, maxScore: 0, maxTime: 50, elapsedTime: 0, lives: 3, immun
 
 function preload() {
   Tone.start();
-  backgroundImage = loadImage("assets/Menubg.PNG");
+  backgroundImage = loadImage("assets/Menubg.png");
   backgroundImage.resize(400, 400);
   groundImage = loadImage("assets/ground.PNG");
-  bgPlaying = loadImage("assets/backgroundPlaying.PNG");
-  spriteSheet = loadImage("assets/character.PNG");
+  bgPlaying = loadImage("assets/backgroundPlaying.png");
+  spriteSheet = loadImage("assets/character.png");
   gameOver = loadImage("assets/gameover.png");
   youWin = loadImage("assets/youwin.jpg");
   flagPole = loadImage("assets/flagpole.png");
@@ -339,9 +339,9 @@ function draw() {
       text("Time left: " + ceil(currentTime), innerWidth-200, 40);
       game.elapsedTime += deltaTime / 1000;
 
-      if (currentTime <=20){
-          serialWrite(new String("HIGH"));
-      }
+      if (currentTime <= 20){
+        serialWrite(new String("HIGH"));
+    }
     
       if (currentTime <= 0){
         game.state = GameState.YouLost;
@@ -410,6 +410,9 @@ function draw() {
   }
 
   if (game.state === GameState.Start) {
+    if (!Startmelody.isPlaying) {
+      Startmelody.start();
+    }
     Playingmelody.stop();
     YouLostmelody.stop();
     YouWinmelody.stop();
