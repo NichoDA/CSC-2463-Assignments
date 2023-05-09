@@ -4,6 +4,7 @@
 int ledPin = 12;
 int buttonPin = 4;
 
+bool active = false;
 
 const int numReadings = 10;
 

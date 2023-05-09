@@ -12,6 +12,8 @@ const debounceDelay = 1000;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
+let activationState = { active: false };
+
 const gravity = 1.5;
 const keys = {
   right: {
@@ -151,7 +153,6 @@ function setup() {
 
 function reset() {
   Tone.start();
-  serialWrite(new String("LOW"));
   game.elapsedTime = 0;
   game.lives = 3;
   game.score = 0;
@@ -208,7 +209,6 @@ function reset() {
 
 
 function draw() {
-  serialWrite(new String("LOW"));
   Tone.start();
 
   if (reader) {
@@ -339,9 +339,13 @@ function draw() {
       text("Time left: " + ceil(currentTime), innerWidth-200, 40);
       game.elapsedTime += deltaTime / 1000;
 
-      if (currentTime <= 20){
+      if (currentTime <= 20 && currentTime >= 10){
         serialWrite(new String("HIGH"));
-    }
+      }
+      else{
+        serialWrite(new String("LOW"));
+      }
+
     
       if (currentTime <= 0){
         game.state = GameState.YouLost;
