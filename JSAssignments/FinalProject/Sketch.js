@@ -8,7 +8,7 @@ let red, green, blue;
 let sensorData = {};
 
 let lastButtonPress = 0;
-const debounceDelay = 1000;
+const debounceDelay = 500;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
@@ -62,8 +62,8 @@ const YouLostmelody = new Tone.Sequence((time, note) => {
 
 const YouWinmelody = new Tone.Sequence((time, note) => {
 	synth.triggerAttackRelease(note, 0.1, time);
-	// subdivisions are given as subarrays
-}, [ 'E4', 'F4', 'G4', null, 'C4', 'E4', 'G4', 'C5', null, 'G4', 'F4', 'E4', 'D4', 'C4']).start("0:0");
+	// subdivisions are given as subarrays  
+}, ['E5', 'G5', 'B5', null, 'C5', 'E5', 'G5', 'C6', null, 'G5', 'E5', 'C5', 'A4', 'G4']).start("0:0");
 
 const GameState = {
   Start: "Start",
@@ -339,7 +339,7 @@ function draw() {
       text("Time left: " + ceil(currentTime), innerWidth-200, 40);
       game.elapsedTime += deltaTime / 1000;
 
-      if (currentTime <= 20 && currentTime >= 10){
+      if (currentTime <= 30 && currentTime >= 20 ){
         serialWrite(new String("HIGH"));
       }
       else{
@@ -427,7 +427,7 @@ function draw() {
     }
     Startmelody.stop(); 
     YouLostmelody.stop();
-    YouWinmelody.start();
+    YouWinmelody.stop();
 
   } else if (game.state === GameState.YouLost) {
     if (!YouLostmelody.isPlaying) {
@@ -435,7 +435,7 @@ function draw() {
     }
     Playingmelody.stop();
     Startmelody.stop();
-    YouWinmelody.stop();
+    YouWinmelody.stop();  
   }
 
  else if (game.state === GameState.YouWin) {
@@ -507,9 +507,12 @@ addEventListener('keydown', ({keyCode}) =>{
       keys.right.pressed = true;
       break;
     case 87:
-      game.character.velocity.y -= 27;
-      sounds.player("Jump").start();
-      break;
+      if ((millis() - lastButtonPress) > debounceDelay){
+        lastButtonPress = millis(); 
+        game.character.velocity.y -= 27;
+        sounds.player("Jump").start();
+        break;
+      }
   }
 })
 
